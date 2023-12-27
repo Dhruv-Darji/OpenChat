@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:openchat/Constants/Colors.dart';
 import 'package:openchat/Services/api_service.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 
 import '../Constants/loadingIcon.dart';
 
@@ -13,15 +15,45 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   bool isLoading = false;
+  bool _emptyText = true;
+  bool _micStatus = false;
+  SpeechToText _speechToText = SpeechToText();
   final GeminiService geminiService = GeminiService();
   final TextEditingController userText = TextEditingController();
   String responseText = '';
 
   @override
-  void dispose() {
-    userText.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _initSpeech();
   }
+
+  /// This has to happen only once per app
+  void _initSpeech() async {
+    _micStatus = await _speechToText.initialize();
+    setState(() {});
+  }
+
+  void _startListening() async{
+    await _speechToText.listen(onResult: _onSpeechResult);
+    setState(() {
+    });
+  }
+  void _stopListening() async {
+    await _speechToText.stop();
+    setState(() {});
+  }
+
+  void _onSpeechResult(SpeechRecognitionResult result){
+    setState(() {
+      userText.text = result.recognizedWords;
+      _emptyText = false;
+    });
+    if(result.finalResult){
+      _callGenerateContentAPI();
+    }
+  }
+
   void _changeLoadingStatus(){
     setState(() {
       isLoading = !isLoading;
@@ -31,10 +63,12 @@ class _ChatPageState extends State<ChatPage> {
   void _resetuserText(){
     setState(() {
       userText.clear();
+      _emptyText=true;
     });
   }
 
   void _callGenerateContentAPI() async {
+    _changeLoadingStatus();
     try {
       String prompt = userText.text;
       print('Prompt value:$prompt');
@@ -42,14 +76,13 @@ class _ChatPageState extends State<ChatPage> {
       print('response:$response');
       setState(() {
         responseText = response;
-        _resetuserText();
+        _resetuserText();        
       });
       _changeLoadingStatus();
     } catch (e) {
       print('Error:$e');
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -115,19 +148,28 @@ class _ChatPageState extends State<ChatPage> {
                       borderSide: BorderSide(color: primaryColor, width: 3.0)),
                   hintText: 'Message to Gemini',
                   hintStyle:
-                      const TextStyle(color: lightText, fontWeight: FontWeight.bold),
-                  suffixIcon: IconButton(
-                    onPressed: () {
-                      _callGenerateContentAPI();
-                      _changeLoadingStatus();
-                    },
+                      const TextStyle(color: lightText, fontWeight: FontWeight.bold),                  
+                  suffixIcon: _emptyText? 
+                  IconButton(
+                    onPressed: 
+                    _speechToText.isNotListening?_startListening :_stopListening, 
+                    icon: Icon(Icons.mic),
+                    color: whatsappcolor,
+                  ):
+                  IconButton(
+                    onPressed:_callGenerateContentAPI,
                     icon: const Icon(
                       Icons.done,
                       size: 25,
-                      color: lightText,
+                      color: whatsappcolor,
                     ),
                   ),
                 ),
+                onChanged: (value){
+                  setState(() {
+                    _emptyText = value.isEmpty;
+                  });
+                },
               ),
             ),
           ],
