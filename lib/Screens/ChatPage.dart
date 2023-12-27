@@ -21,6 +21,7 @@ class _ChatPageState extends State<ChatPage> {
   final GeminiService geminiService = GeminiService();
   final TextEditingController userText = TextEditingController();
   String responseText = '';
+  String question = '';
 
   @override
   void initState() {
@@ -71,6 +72,9 @@ class _ChatPageState extends State<ChatPage> {
     _changeLoadingStatus();
     try {
       String prompt = userText.text;
+      setState(() {
+        question = prompt;
+      });
       print('Prompt value:$prompt');
       String response = await geminiService.generateContent(prompt);
       print('response:$response');
@@ -121,15 +125,30 @@ class _ChatPageState extends State<ChatPage> {
                       ) ,              
                     ),
                   ):
-                  Card(
-                    color: primaryColor, // Set background color to red
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        responseText,
-                        style: TextStyle(color: primaryTextColor),
+                  Column(
+                    children: [
+                      SizedBox(
+                        height: 20,
                       ),
-                    ),
+                      Text("Quesion: $question",style:TextStyle(
+                        color: lightText,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold
+                        ),),
+                      SizedBox(
+                        height: 20,
+                      ),
+                      Card(                        
+                        color: primaryColor, // Set background color to red
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Text(
+                            "Answer:\n\n$responseText",
+                            style: TextStyle(color: primaryTextColor,fontSize: 18),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
