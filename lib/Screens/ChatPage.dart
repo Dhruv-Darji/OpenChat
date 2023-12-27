@@ -1,3 +1,4 @@
+import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:openchat/Constants/Colors.dart';
 import 'package:openchat/Services/api_service.dart';
@@ -84,6 +85,7 @@ class _ChatPageState extends State<ChatPage> {
       });
       _changeLoadingStatus();
     } catch (e) {
+      _changeLoadingStatus();
       print('Error:$e');
     }
   }
@@ -115,27 +117,47 @@ class _ChatPageState extends State<ChatPage> {
               child: ListView(
                 children: [
                   responseText==''?
-                  const Center(
-                    heightFactor: 2,
-                    child: Text(
-                      'Start Serching With GEMINI \n Introduced by Google',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: lightText
-                      ) ,              
-                    ),
-                  ):
                   Column(
                     children: [
-                      SizedBox(
+                      const SizedBox(height: 16,),
+                      const Text(
+                        'Start Searching With GEMINI',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: lightText,                          
+                        ) ,              
+                      ),
+                      const SizedBox(height: 16,),
+                      AnimatedTextKit(
+                        animatedTexts: [
+                          TypewriterAnimatedText("Powerful AI Tool",
+                          textStyle: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: whatsappcolor,
+                              ),
+                            speed: Duration(milliseconds: 250),
+                            ),
+                          ],
+                          totalRepeatCount: 2,
+                          pause: const Duration(milliseconds: 1000),
+                          displayFullTextOnTap: true,
+                          stopPauseOnTap: true,
+                        )
+                    ],
+                  ):
+                  Column(  
+                    children: [
+                      const SizedBox(
                         height: 20,
                       ),
-                      Text("Quesion: $question",style:TextStyle(
+                      Text("Quesion: $question",style:const TextStyle(
                         color: lightText,
                         fontSize: 20,
                         fontWeight: FontWeight.bold
                         ),),
-                      SizedBox(
+                      const SizedBox(
                         height: 20,
                       ),
                       Card(                        
@@ -144,7 +166,7 @@ class _ChatPageState extends State<ChatPage> {
                           padding: const EdgeInsets.all(16.0),
                           child: Text(
                             "Answer:\n\n$responseText",
-                            style: TextStyle(color: primaryTextColor,fontSize: 18),
+                            style: const TextStyle(color: primaryTextColor,fontSize: 18),
                           ),
                         ),
                       ),
@@ -173,13 +195,14 @@ class _ChatPageState extends State<ChatPage> {
                     onPressed: 
                     _speechToText.isNotListening?_startListening :_stopListening, 
                     icon: Icon(Icons.mic),
+                    iconSize: 26,
                     color: whatsappcolor,
                   ):
                   IconButton(
                     onPressed:_callGenerateContentAPI,
                     icon: const Icon(
                       Icons.done,
-                      size: 25,
+                      size: 26,
                       color: whatsappcolor,
                     ),
                   ),
